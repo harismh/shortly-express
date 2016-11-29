@@ -2,7 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-// var rl = require('readline');
+var bcrypt = require('bcrypt-nodejs');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -12,6 +12,8 @@ var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
 var app = express();
+//app.use(express.cookieParser('shhhh, very secret'));
+//app.use(express.session());
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -71,7 +73,6 @@ function(req, res) {
     }
   });
 });
-
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
@@ -81,14 +82,16 @@ app.get('/login', function(req, res) {
 
 app.post('/login', function(req, res) {
   var queryUsername = req.body.username;
-  var queryPassword = req.body.password;
+  var queryPassword = bcrypt.hashSync(req.body.password);
   console.log('we are hitting here');
   new User({username: queryUsername, password: queryPassword})
     .fetch()
     .then(function(found) {
       if (found) {
         console.log('hey yo, you found username shortly.js', found);
-        res.status(200).send(found.attributes);
+        res.status(200);
+        //res.send(found.attributes);
+        res.redirect('index');
         //create session
         //redirect to index
       } else {

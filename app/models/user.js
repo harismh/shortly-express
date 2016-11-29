@@ -10,17 +10,22 @@ var User = db.Model.extend({
   
   initialize: function() {
     this.on('creating', function(model, attrs, option) {      
-      bcrypt.hash(this.get('password'), null, null, function(err, hash) {
-        if (err) {
-          console.log('error in bcrypt');
-          throw err;
-        } else {
-          model.set('password', hash);
-        }
-      });
+    //   bcrypt.hashSync(this.get('password'), null, null, function(err, hash) {
+    //     if (err) {
+    //       console.log('error in bcrypt');
+    //       throw err;
+    //     } else {
+    //       model.set('password', hash);
+    //       console.log(model.get('password'));
+    //     }
+    //   });
+    // });
+      var hash = bcrypt.hashSync(model.get('password'));
+      model.set('password', hash);
     });
   }
 });
+
  
 
 module.exports = User;
