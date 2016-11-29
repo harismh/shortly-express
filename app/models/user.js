@@ -10,7 +10,7 @@ var User = db.Model.extend({
   
   initialize: function() {
     this.on('creating', function(model, attrs, option) {      
-    //   bcrypt.hashSync(this.get('password'), null, null, function(err, hash) {
+    //   bcrypt.hash(this.get('password'), null, null, function(err, hash) {
     //     if (err) {
     //       console.log('error in bcrypt');
     //       throw err;
