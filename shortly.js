@@ -2,7 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+// var rl = require('readline');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -75,7 +75,83 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.get('/login', function(req, res) {
+  res.render('login');
+});
 
+app.post('/login', function(req, res) {
+  var queryUsername = req.body.username;
+  var queryPassword = req.body.password;
+  console.log('we are hitting here');
+  new User({username: queryUsername, password: queryPassword})
+    .fetch()
+    .then(function(found) {
+      if (found) {
+        console.log('hey yo, you found username shortly.js', found);
+        res.status(200).send(found.attributes);
+        //create session
+        //redirect to index
+      } else {
+        console.log('no username login shortly.js');
+        res.redirect('signup');
+        //prompt that username/password is incorrect
+      }
+    });
+  // db.knex.select('password')
+  //   .from('users')
+  //   .where({username: queryUsername})
+  //   .then(function(searchResults) {
+  //     Users.create
+      // bcrypt.compare(queryPassword, searchResults, function(err, match) {
+      //   if (match) {
+      //     //start session
+      //     res.redirect('/index');
+      //   } else {
+      //     res.redirect('/login');
+      //   }
+      // });
+});
+      //posiible solution for proper funcationality
+        // rl.question('Username/password does not exist. Create new account? [yes]/no: ', function(answer) {
+        //   if (answer === 'yes') {
+        //     res.redirect('/signup');
+        //   } else {
+        //     console.log('Screw you. Try again later');
+        //   }
+        // });
+//});
+//place holder for post to login
+
+
+
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+
+app.post('/signup', function(req, res) {
+  var newUser = req.body.username;
+  var newPassword = req.body.password;
+  
+  new User({username: newUser})
+    .fetch()
+    .then(function(found) {
+      if (found) {
+        console.log('You already have an account sucka signup shortly.js');
+        res.redirect('login');
+      } else {
+        Users.create({
+          username: req.body.username,
+          password: req.body.password
+        })
+        .then(function() {
+          res.status(200);
+          //create session
+          res.redirect('index');
+        });
+      }
+    });
+});
 
 
 /************************************************************/
