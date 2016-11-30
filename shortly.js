@@ -3,6 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var dialog = require('dialog');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -21,12 +22,9 @@ app.use(session({
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(partials());
-// Parse JSON (uniform resource locators)
 app.use(bodyParser.json());
-// Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
-
 
 app.get('/', util.checkUser,
   function(req, res) {
@@ -81,8 +79,11 @@ app.post('/links', util.checkUser,
 /************************************************************/
 app.get('/login', function(req, res) {
   if (req.session.user) {
-    console.log('get login, yo already logged in');
-    res.redirect('/');
+    // dialog.warn('Already logged in. Redirecting...', function(err) {
+    //   if (!err) {
+        res.redirect('/');
+    //   }
+    // });
   } else {
     res.render('login');
   }
@@ -94,36 +95,31 @@ app.post('/login', function(req, res) {
   .fetch()
   .then(function(found) {
     if (found) {
-        // console.log('hey yo, you found username shortly.js', found);
       this.comparePassword(req.body.password, function (compare) {
         if (compare) {
-          //create session
           req.session.regenerate(function() {
             req.session.user = req.body.username;
             res.status(200);
             res.redirect('/');
           });
-
         } else {
-          res.redirect('/login');
+          // dialog.warn('Username/password incorrect. Try again.', function(err) {
+          //   if (!err) {
+              res.redirect('/login');
+          //   }
+          // });
         }
       });
 
     } else {
-      res.redirect('/login');
-      //prompt that username/password is incorrect
+      // dialog.warn('Username/password incorrect. Try again.', function(err) {
+      //   if (!err) {
+          res.redirect('/login');
+      //   }
+      // });
     }
   });
 });
-      //possible solution for proper funcationality
-        // rl.question('Username/password does not exist. Create new account? [yes]/no: ', function(answer) {
-        //   if (answer === 'yes') {
-        //     res.redirect('/signup');
-        //   } else {
-        //     console.log('Screw you. Try again later');
-        //   }
-        // });
-//});
 
 app.get('/signup', function(req, res) {
   res.render('signup');
@@ -142,7 +138,6 @@ app.post('/signup', function(req, res) {
         password: req.body.password
       })
       .then(function() {
-        //create session
         req.session.regenerate(function() {
           req.session.user = req.body.username;
           res.status(200);
@@ -152,6 +147,16 @@ app.post('/signup', function(req, res) {
       });
     }
   });
+});
+
+app.get('/logout', function(req, res) {
+  // dialog.warn('Logging out...', function(err) {
+  //   if (!err) {
+        req.session.destroy(function() {
+        res.redirect('/login');
+       });
+  //   }
+  // });
 });
 
 

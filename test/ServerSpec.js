@@ -330,7 +330,68 @@ describe('', function() {
         done();
       });
     });
+    
+    it ('Redirects user to homepage if they are already logged in when they try to access the login page', function (done) {
+      var options = {
+        'method': 'POST',
+        'followAllRedirects': true,
+        'uri': 'http://127.0.0.1:4568/login',
+        'json': {
+          'username': 'Phillip',
+          'password': 'Phillip'
+        }
+      };
+
+      requestWithSession(options, function(error, res, body) {
+        requestWithSession('http://127.0.0.1:4568/login', function(error, res, body) {
+          console.log('tricky tester');
+          expect(res.req.path).to.equal('/');
+          done();
+        });
+      });
+    });
 
   }); // 'Account Login'
 
+
+  describe('logout functionality: ', function() {
+    
+    var requestWithSession = request.defaults({jar: true});
+
+    beforeEach(function(done) {
+      // create a user that we can then log-in with
+      new User({
+        'username': 'Phillip',
+        'password': 'Phillip'
+      }).save().then(function() {
+        var options = {
+          'method': 'POST',
+          'followAllRedirects': true,
+          'uri': 'http://127.0.0.1:4568/login',
+          'json': {
+            'username': 'Phillip',
+            'password': 'Phillip'
+          }
+        };
+        // login via form and save session info
+        requestWithSession(options, function(error, res, body) {
+          done();
+        });
+      });
+    });
+
+    it('Redirects to Login Page after Clicking Logout Button', function(done) {
+      request('http://127.0.0.1:4568/logout', function(error, res, body) {
+        expect(res.req.path).to.equal('/login');
+        done();
+      });
+    });
+
+    it('End the session after Clicking the Logout Button', function () {
+      request('http://127.0.0.1:4568/logout', function(error, res, body) {
+        expect(res.req.session.user).to.equal(undefined);
+        done();
+      });
+    });
+  });
 });
